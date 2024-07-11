@@ -1,0 +1,70 @@
+/*=====================================================================================
+MISC HELPER FUNCTIONS
+=======================================================================================*/
+.helper {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    background: url(img/money.png);
+    width: 16px;
+    height: 16px;
+}
+
+/*=====================================================================================
+GAME INITIALIZATION
+=======================================================================================*/
+.game-init {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+}
+
+/*=====================================================================================
+VARIABLES AND PRESETS
+=======================================================================================*/
+.button {
+    background: url(img/panelMenu3.png);
+}
+
+/*=====================================================================================
+MAIN LOOP
+=======================================================================================*/
+.main-loop {
+    cursor: pointer;
+    width: 48px;
+    height: 48px;
+    position: absolute;
+    left: 0px;
+}
+
+/*=====================================================================================
+LAUNCH THIS THING
+=======================================================================================*/
+.launch {
+    position: absolute;
+    bottom: 40px;
+    width: 300px;
+    left: 50%;
+    margin-left: -150px;
+    font-size: 16px;
+    text-align: center;
+    z-index: 100;
+}
+
+.launch a {
+    display: block;
+    border-radius: 40px;
+    font-size: 22px;
+    opacity: 0.5;
+    cursor: pointer;
+    text-decoration: none;
+    background: #000;
+    color: #fff;
+    padding: 8px 4px;
+    width: 150px;
+    margin: 5px auto;
+}
+
+.launch a:hover {
+    opacity: 1;
+}
