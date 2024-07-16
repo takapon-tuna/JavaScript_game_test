@@ -91,7 +91,9 @@ Game.variables = {
         playerSize: 20,
         bullets: [],
         enemies: [],
-        range: 150 // 射程範囲を追加
+        range: 150, // 射程範囲を追加
+        lastShotTime: 0, // 最後に弾を発射した時間
+        shotInterval: 500 // 弾を発射する間隔（ミリ秒）
     }
 };
 
@@ -283,7 +285,6 @@ Game.draw = function () {
     // クリックボタンの描画
     ctx.fillStyle = 'red';
     ctx.fillRect(Game.variables.clickButton.x, Game.variables.clickButton.y, Game.variables.clickButton.width, Game.variables.clickButton.height);
-
 };
 
 Game.updateGame2 = function () {
@@ -336,7 +337,8 @@ Game.updateGame2 = function () {
     });
 
     // 自動で弾を発射
-    if (Game.variables.score > 0 && Game.variables.game2.enemies.length > 0) {
+    var currentTime = Date.now();
+    if (Game.variables.score > 0 && Game.variables.game2.enemies.length > 0 && currentTime - Game.variables.game2.lastShotTime >= Game.variables.game2.shotInterval) {
         var closestEnemy = null;
         var closestDist = Infinity;
         Game.variables.game2.enemies.forEach(function (enemy) {
@@ -363,6 +365,7 @@ Game.updateGame2 = function () {
             Game.variables.game2.bullets.push(bullet);
             Game.variables.score--;
             Game.updateScore();
+            Game.variables.game2.lastShotTime = currentTime; // 最後に弾を発射した時間を更新
         }
     }
 };
