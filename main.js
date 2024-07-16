@@ -39,6 +39,9 @@ Game.init = function () {
     // スコアを初期化
     Game.updateScore();
     Game.updateProductionRates();
+
+    // ゲーム開始時間を記録
+    Game.startTime = Date.now();
 };
 
 Game.loadResources = function () {
@@ -80,7 +83,16 @@ Game.variables = {
         purchased: false
     },
     clicksPerSecond: 0,
-    totalClicksPerSecond: 0
+    totalClicksPerSecond: 0,
+    game2: {
+        playerX: 300,
+        playerY: 300,
+        playerSpeed: 5,
+        playerSize: 20,
+        bullets: [],
+        enemies: [],
+        range: 150 // 射程範囲を追加
+    }
 };
 
 // スコアを表示するための要素を追加
@@ -252,6 +264,8 @@ MAIN LOOP
 Game.loop = function () {
     Game.update();
     Game.draw();
+    Game.updateGame2();
+    Game.drawGame2();
     requestAnimationFrame(Game.loop);
 };
 
@@ -270,9 +284,112 @@ Game.draw = function () {
     ctx.fillStyle = 'red';
     ctx.fillRect(Game.variables.clickButton.x, Game.variables.clickButton.y, Game.variables.clickButton.width, Game.variables.clickButton.height);
 
+};
+
+Game.updateGame2 = function () {
+    // ゲーム開始からの経過時間を計算
+    var elapsedTime = (Date.now() - Game.startTime) / 1000; // 秒単位
+
+    // 敵の生成
+    var enemySpawnRate = elapsedTime < 30 ? 0.005 : 0.02; // 30秒間はゆっくり、その後は通常速度
+    if (Math.random() < enemySpawnRate) {
+        var enemy = {
+            x: Math.random() * 400,
+            y: Math.random() * 600,
+            size: 20,
+            speed: 2
+        };
+        Game.variables.game2.enemies.push(enemy);
+    }
+
+    // 敵の移動
+    Game.variables.game2.enemies.forEach(function (enemy) {
+        var dx = Game.variables.game2.playerX - enemy.x;
+        var dy = Game.variables.game2.playerY - enemy.y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        enemy.x += (dx / dist) * enemy.speed;
+        enemy.y += (dy / dist) * enemy.speed;
+    });
+
+    // 弾の移動
+    Game.variables.game2.bullets.forEach(function (bullet, index) {
+        bullet.x += bullet.vx;
+        bullet.y += bullet.vy;
+
+        // 画面外に出た弾を削除
+        if (bullet.x < 0 || bullet.x > 400 || bullet.y < 0 || bullet.y > 600) {
+            Game.variables.game2.bullets.splice(index, 1);
+        }
+    });
+
+    // 弾と敵の衝突判定
+    Game.variables.game2.bullets.forEach(function (bullet, bulletIndex) {
+        Game.variables.game2.enemies.forEach(function (enemy, enemyIndex) {
+            var dx = bullet.x - enemy.x;
+            var dy = bullet.y - enemy.y;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < bullet.size + enemy.size) {
+                Game.variables.game2.bullets.splice(bulletIndex, 1);
+                Game.variables.game2.enemies.splice(enemyIndex, 1);
+            }
+        });
+    });
+
+    // 自動で弾を発射
+    if (Game.variables.score > 0 && Game.variables.game2.enemies.length > 0) {
+        var closestEnemy = null;
+        var closestDist = Infinity;
+        Game.variables.game2.enemies.forEach(function (enemy) {
+            var dx = Game.variables.game2.playerX - enemy.x;
+            var dy = Game.variables.game2.playerY - enemy.y;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < closestDist && dist <= Game.variables.game2.range) { // 射程範囲内の敵をターゲットにする
+                closestDist = dist;
+                closestEnemy = enemy;
+            }
+        });
+
+        if (closestEnemy) {
+            var dx = closestEnemy.x - Game.variables.game2.playerX;
+            var dy = closestEnemy.y - Game.variables.game2.playerY;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            var bullet = {
+                x: Game.variables.game2.playerX,
+                y: Game.variables.game2.playerY,
+                vx: (dx / dist) * 5,
+                vy: (dy / dist) * 5,
+                size: 5
+            };
+            Game.variables.game2.bullets.push(bullet);
+            Game.variables.score--;
+            Game.updateScore();
+        }
+    }
+};
+
+Game.drawGame2 = function () {
+    // 右側のゲームの描画
+    var canvas2 = getElementById('gameCanvas2');
+    var ctx2 = canvas2.getContext('2d');
+    ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+
     // プレイヤーの描画
-    // ctx.fillStyle = 'blue';
-    // ctx.fillRect(Game.variables.player.x, Game.variables.player.y, 50, 50);
+    ctx2.fillStyle = 'blue';
+    ctx2.fillRect(Game.variables.game2.playerX, Game.variables.game2.playerY, Game.variables.game2.playerSize, Game.variables.game2.playerSize);
+
+    // 弾の描画
+    ctx2.fillStyle = 'green';
+    Game.variables.game2.bullets.forEach(function (bullet) {
+        ctx2.beginPath();
+        ctx2.arc(bullet.x, bullet.y, bullet.size, 0, Math.PI * 2);
+        ctx2.fill();
+    });
+
+    // 敵の描画
+    ctx2.fillStyle = 'red';
+    Game.variables.game2.enemies.forEach(function (enemy) {
+        ctx2.fillRect(enemy.x, enemy.y, enemy.size, enemy.size);
+    });
 };
 
 /*=====================================================================================
