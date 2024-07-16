@@ -66,13 +66,18 @@ Game.variables = {
     autoClicker: {
         cost: 10,
         interval: 1000, // 1秒
-        count: 0
+        count: 0,
+        production: 1 // 秒間1クリック
     },
     scoreBoost: {
         cost: 100,
         interval: 1000, // 1秒
         production: 5,
         count: 0
+    },
+    upgrade: {
+        cost: 300,
+        purchased: false
     },
     clicksPerSecond: 0,
     totalClicksPerSecond: 0
@@ -145,6 +150,15 @@ scoreBoostButton.style.top = '110px';
 scoreBoostButton.style.left = '10px';
 document.body.appendChild(scoreBoostButton);
 
+// アップグレードボタンを追加
+var upgradeButton = document.createElement('button');
+upgradeButton.id = 'upgradeButton';
+upgradeButton.innerText = '自動クリック君のアップグレード (300スコア)';
+upgradeButton.style.position = 'absolute';
+upgradeButton.style.top = '10px';
+upgradeButton.style.right = '10px';
+document.body.appendChild(upgradeButton);
+
 // スコアを更新する関数
 Game.updateScore = function () {
     scoreElement.innerText = 'Score: ' + Game.variables.score;
@@ -162,9 +176,9 @@ Game.updateScoreBoostCount = function () {
 
 // 秒間スコアを更新する関数
 Game.updateProductionRates = function () {
-    Game.variables.clicksPerSecond = Game.variables.autoClicker.count + (Game.variables.scoreBoost.count * Game.variables.scoreBoost.production);
+    Game.variables.clicksPerSecond = (Game.variables.autoClicker.count * Game.variables.autoClicker.production) + (Game.variables.scoreBoost.count * Game.variables.scoreBoost.production);
     Game.variables.totalClicksPerSecond = Game.variables.clicksPerSecond; // プレイヤーのクリックを含む場合は別途加算
-    cpsElement.innerText = '秒間スコア (クリック含まず): ' + Game.variables.clicksPerSecond;
+    cpsElement.innerText = '秒間スコア (クリックは含まない): ' + Game.variables.clicksPerSecond;
     // totalCpsElement.innerText = '秒間スコア (クリック含む): ' + Game.variables.totalClicksPerSecond;
 };
 
@@ -194,10 +208,23 @@ scoreBoostButton.addEventListener('click', function () {
     }
 });
 
+// アップグレードの購入処理
+upgradeButton.addEventListener('click', function () {
+    if (Game.variables.score >= Game.variables.upgrade.cost && !Game.variables.upgrade.purchased) {
+        Game.variables.score -= Game.variables.upgrade.cost;
+        Game.updateScore();
+        Game.variables.autoClicker.production = 2; // 秒間2クリックにアップグレード
+        Game.variables.upgrade.purchased = true;
+        upgradeButton.disabled = true;
+        upgradeButton.innerText = '自動クリック君のアップグレード (購入済み)';
+        Game.updateProductionRates();
+    }
+});
+
 // 自動クリック君とスコアブースト君の処理をまとめる
 setInterval(function () {
     if (Game.variables.autoClicker.count > 0) {
-        Game.variables.score += Game.variables.autoClicker.count;
+        Game.variables.score += Game.variables.autoClicker.count * Game.variables.autoClicker.production;
     }
     if (Game.variables.scoreBoost.count > 0) {
         Game.variables.score += Game.variables.scoreBoost.count * Game.variables.scoreBoost.production;
@@ -216,8 +243,6 @@ document.getElementById('gameCanvas').addEventListener('click', function (event)
         y >= Game.variables.clickButton.y && y <= Game.variables.clickButton.y + Game.variables.clickButton.height) {
         Game.variables.score++;
         Game.updateScore();
-        Game.variables.totalClicksPerSecond++; // プレイヤーのクリックを含む場合
-        Game.updateProductionRates();
     }
 });
 
