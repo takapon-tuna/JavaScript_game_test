@@ -93,7 +93,7 @@ Game.variables = {
         enemies: [],
         range: 150, // 射程範囲を追加
         lastShotTime: 0, // 最後に弾を発射した時間
-        shotInterval: 500 // 弾を発射する間隔（ミリ秒）
+        shotInterval: 300 // 弾を発射する間隔（ミリ秒）
     }
 };
 
@@ -295,7 +295,7 @@ Game.updateGame2 = function () {
     var enemySpawnRate = elapsedTime < 30 ? 0.005 : 0.02; // 30秒間はゆっくり、その後は通常速度
     if (Math.random() < enemySpawnRate) {
         var enemy = {
-            x: Math.random() * 400,
+            x: Math.random() * 600,
             y: Math.random() * 600,
             size: 20,
             speed: 2
